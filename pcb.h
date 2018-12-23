@@ -4,6 +4,8 @@
 
 // 进程状态枚举
 enum task_state {
+    // 许可状态
+    TASK_ACCPECT,
     // 可运行状态
     TASK_RUNNING,
     // 可中断阻塞状态

@@ -2,21 +2,23 @@
 #include "pcb.h"
 #include <QString>
 #include <QtDebug>
+#include <algorithm>
 
 scheduler::scheduler()
 {
     // 初始化根进程
     root_task = new task_struct("root", 0, 0);
+    root_task->state = TASK_UBERRUPTIBLE;
 }
 /**
- * 添加一个进程并放入就绪队列中
+ * 添加一个进程并放入后备队列中
  */
 bool scheduler::add_task(const char* task_name, unsigned long priority, unsigned long sum_exec_runtime)
 {
     task_struct* task = new task_struct(task_name, priority, sum_exec_runtime);
-    // 设置为就绪状态，并放入就绪队列中
-    task->state = TASK_RUNNING;
-    this->ready_queue.enqueue(task);
+    // 放入后备队列中
+    task->state = TASK_ACCPECT;
+    this->back_queue.append(task);
     // 放入双向链表
     if (root_task->prev == nullptr) {
         root_task->next = task;
@@ -24,10 +26,29 @@ bool scheduler::add_task(const char* task_name, unsigned long priority, unsigned
     } else {
         root_task->prev->next = task;
     }
-    if (running_task == nullptr) {
-        running_task = task;
-    }
     return true;
+}
+bool cmp(const task_struct* s1, const task_struct* s2)
+{
+    return s1->priority > s2->priority;
+}
+/**
+ * 从后备队列中取出一个高优先级的放到就绪队列
+ */
+void scheduler::update_ready_queue()
+{
+    if (ready_queue.size() > 4) {
+        qDebug() << "就绪队列数量大于4";
+        return;
+    }
+    if (back_queue.size() == 0) {
+        qDebug() << "后备队列数量为0";
+        return;
+    }
+    std::sort(back_queue.begin(), back_queue.end(), cmp);
+    task_struct* task = back_queue.at(0);
+    task->state = TASK_RUNNING;
+    ready_queue.enqueue(task);
 }
 /**
  * 从就绪队列取出一个进程运行
@@ -68,6 +89,7 @@ bool scheduler::kill_task(unsigned short pid)
         }
         task = task->next;
     }
+    qDebug() << "找不到pid:" << pid;
     return false;
 }
 /**
@@ -93,6 +115,6 @@ bool scheduler::unblock_task(unsigned short pid)
             return true;
         }
     }
-    qDebug() << "找不到，pid:" << pid;
+    qDebug() << "找不到pid:" << pid;
     return false;
 }

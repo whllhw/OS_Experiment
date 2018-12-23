@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += sql core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -27,15 +27,22 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    sched.cpp
+    sched.cpp \
+    dialog.cpp
 
 HEADERS += \
         mainwindow.h \
     pcb.h \
-    sched.h
+    sched.h \
+    dialog.h \
+    connection.h \
+    center_model.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    dialog.ui
+
+RESOURCES     = os_test.qrc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
