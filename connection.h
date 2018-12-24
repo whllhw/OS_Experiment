@@ -34,7 +34,7 @@ static bool createConnection()
     query.exec("create table task (pid int primary key, "
                "task_name varchar(20), state varchar(20), priority integer, "
                "total_runtime integer, remain_runtime integer)");
-    query.exec("insert into task values(100,'test','TASK_ACCPECT',1000,1000,1000)");
+    //    query.exec("insert into task values(100,'test','TASK_ACCPECT',1000,1000,1000)");
     return true;
 }
 #define T_pid "pid"

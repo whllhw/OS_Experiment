@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget* parent)
     add_toolBar();
     createConnection();
     init_model();
+    schedu = new scheduler(write_model);
     timer = new QTimer(this);
     connect(timer, timer->timeout, this, update);
     timer->start(1000);
@@ -26,10 +27,12 @@ void MainWindow::init_model()
     write_model = new QSqlTableModel();
     write_model->setTable("task");
 
-    back_model = new MySqlQueryModel();
-    ui->back_tableView->setModel(back_model);
+    ui->back_tableView->setModel(&back_model[0]);
+    ui->ready_tableView->setModel(&back_model[1]);
+    ui->block_tableView->setModel(&back_model[2]);
+    ui->finish_tableView->setModel(&back_model[3]);
+    ui->run_tableView->setModel(&back_model[4]);
     all_query();
-    ui->back_tableView->resizeColumnsToContents();
 }
 
 void MainWindow::add_toolBar()
@@ -79,33 +82,47 @@ void MainWindow::add_random_task()
     const char* c = "0123456789abcdefghijklmnopqrstuvwxyz"; //可填充的字符
     int ulMsgLength = 5;
     char* MsgBuffer = new char[ulMsgLength]; //定义一个ulMsgLength长度的字符数组
-    MsgBuffer[ulMsgLength - 1] = 0;
-    for (int i = 0; i < ulMsgLength; i++) {
+    MsgBuffer[ulMsgLength - 1] = '\0';
+    for (int i = 0; i < ulMsgLength - 1; i++) {
         int index = rand() % strlen(c);
         MsgBuffer[i] = c[index];
     }
-    schedu.add_task(MsgBuffer, rand(), rand());
-
-    //    write_model->insertRecord(-1, )
+    schedu->add_task(MsgBuffer, rand(), rand());
 }
 
 void MainWindow::update()
 {
-    write_model->setFilter(" state = 'TASK_ACCPECT'");
-    write_model->select();
-    for (int i = 0; i < write_model->rowCount(); ++i) {
-        QSqlRecord record = write_model->record(i);
-        int remain_time = record.value(T_remain_runtime).toInt();
-        remain_time--;
-        record.setValue(T_remain_runtime, remain_time);
-        write_model->setRecord(i, record);
-    }
-    write_model->submitAll();
+    schedu->update();
     all_query();
 }
 
 void MainWindow::all_query()
 {
-    back_model->setQuery("select pid as PID,task_name as 进程名,priority as 优先级,remain_runtime as 剩余时间 from task "
-                         "where state = 'TASK_ACCPECT'");
+    //    for (int i = 0; i < 3; i++) {
+    back_model[0].setQuery("select pid as PID,task_name as 进程名,"
+                           "priority as 优先级,remain_runtime as 剩余时间 from task "
+                           "where state = '"
+        + schedu->untils(TASK_ACCPECT) + "'");
+    //    }
+    back_model[1].setQuery("select pid as PID,task_name as 进程名,"
+                           "priority as 优先级,remain_runtime as 剩余时间 from task "
+                           "where state = '"
+        + schedu->untils(TASK_RUNNING) + "'");
+    back_model[2].setQuery("select pid as PID,task_name as 进程名,"
+                           "priority as 优先级,remain_runtime as 剩余时间 from task "
+                           "where state = '"
+        + schedu->untils(TASK_STOPPED) + "'");
+    // 设置完成队列信息
+    back_model[3].setQuery("select pid as PID,task_name as 进程名,"
+                           "priority as 优先级,remain_runtime as 剩余时间 from task "
+                           "where state = 'TASK_FINISHED' or state = 'TASK_KILLED'");
+    back_model[4].setQuery("select pid as PID,task_name as 进程名,"
+                           "priority as 优先级,remain_runtime as 剩余时间 from task "
+                           "where pid="
+        + QString::number(schedu->running_task == nullptr ? 0 : schedu->running_task->pid));
+    ui->back_tableView->resizeColumnsToContents();
+    ui->run_tableView->resizeColumnsToContents();
+    ui->finish_tableView->resizeColumnsToContents();
+    ui->block_tableView->resizeColumnsToContents();
+    ui->ready_tableView->resizeColumnsToContents();
 }

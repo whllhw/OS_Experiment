@@ -3,12 +3,14 @@
 #include <QString>
 #include <QtDebug>
 #include <algorithm>
+#include <connection.h>
 
-scheduler::scheduler()
+scheduler::scheduler(QSqlTableModel* write_model)
 {
     // 初始化根进程
     root_task = new task_struct("root", 0, 0);
     root_task->state = TASK_UBERRUPTIBLE;
+    this->write_model = write_model;
 }
 /**
  * 添加一个进程并放入后备队列中
@@ -18,13 +20,29 @@ bool scheduler::add_task(const char* task_name, unsigned long priority, unsigned
     task_struct* task = new task_struct(task_name, priority, sum_exec_runtime);
     // 放入后备队列中
     task->state = TASK_ACCPECT;
+    QSqlQuery query;
+    query.prepare("insert into task values"
+                  "(:pid,:task_name,:state,:priority,"
+                  ":total_runtime,:remain_runtime)");
+    query.bindValue(":pid", task->pid);
+    query.bindValue(":task_name", task->name);
+    query.bindValue(":state", "TASK_ACCPECT");
+    query.bindValue(":priority", task->priority);
+    query.bindValue(":total_runtime", task->sum_exec_runtime);
+    query.bindValue(":remain_runtime", task->sum_exec_runtime);
+    query.exec();
     this->back_queue.append(task);
     // 放入双向链表
     if (root_task->prev == nullptr) {
         root_task->next = task;
         root_task->prev = task;
+        task->prev = root_task;
+        task->next = root_task;
     } else {
         root_task->prev->next = task;
+        task->next = root_task;
+        task->prev = root_task->prev;
+        root_task->prev = task;
     }
     return true;
 }
@@ -48,17 +66,29 @@ void scheduler::update_ready_queue()
     std::sort(back_queue.begin(), back_queue.end(), cmp);
     task_struct* task = back_queue.at(0);
     task->state = TASK_RUNNING;
+    model_set_state(task->pid, TASK_RUNNING);
     ready_queue.enqueue(task);
 }
 /**
  * 从就绪队列取出一个进程运行
+ * 发生调度情况如下：
+ * 1.当前进程时间片用完。重新入队就绪
+ * 2.当前进程阻塞。入队阻塞
+ * 3.当前进程被杀死。标记为杀死
+ * 4.当前进程执行完毕。标记为结束
  */
-void scheduler::update()
+void scheduler::scheduling()
 {
     if (this->running_task != nullptr) {
         // 放入就绪队列末尾
         if (running_task->state == TASK_RUNNING) {
-            this->ready_queue.enqueue(this->running_task);
+            if (running_task->remain_exec_runtime <= 0) {
+                model_set_state(running_task->pid, TASK_FINISHED);
+            } else {
+                this->ready_queue.enqueue(this->running_task);
+            }
+        } else {
+            qDebug() << __LINE__ << ": state bug!";
         }
     } else {
         qDebug() << "当前无运行中的进程";
@@ -69,6 +99,76 @@ void scheduler::update()
     }
     task_struct* task = this->ready_queue.dequeue();
     this->running_task = task;
+    if (counter == 0) {
+        counter = 10;
+    }
+}
+/**
+ * 按时间片进行轮转，可能发生调度如下：
+ * 1.当前进程完成
+ */
+void scheduler::update()
+{
+    update_ready_queue();
+    if (running_task != nullptr) {
+        unsigned int pid = running_task->pid;
+        write_model->setFilter("pid=" + QString::number(pid));
+        write_model->select();
+        if (write_model->rowCount() == 0) {
+            qDebug() << __LINE__ << ",找不到pid:" << pid;
+            return;
+        }
+        QSqlRecord record = write_model->record(0);
+        int remain_time = record.value(T_remain_runtime).toInt();
+        remain_time--;
+        record.setValue(T_remain_runtime, remain_time);
+        write_model->setRecord(0, record);
+        write_model->submitAll();
+        if (remain_time == 0 || --counter == 0) {
+            scheduling();
+        }
+    } else {
+        scheduling();
+    }
+}
+void scheduler::model_set_state(unsigned int pid, task_state state)
+{
+    write_model->setFilter("pid=" + QString::number(pid));
+    write_model->select();
+    if (write_model->rowCount() == 0) {
+        qDebug() << __LINE__ << ",找不到pid:" << pid;
+        return;
+    }
+    QSqlRecord record = write_model->record(0);
+
+    record.setValue(T_state, untils(state));
+    write_model->setRecord(0, record);
+    write_model->submitAll();
+}
+QString scheduler::untils(task_state state)
+{
+    QString str_state;
+    switch (state) {
+    case TASK_ACCPECT:
+        str_state = "TASK_ACCPECT";
+        break;
+    case TASK_FINISHED:
+        str_state = "TASK_FINISHED";
+        break;
+    case TASK_KILLED:
+        str_state = "TASK_KILLED";
+        break;
+    case TASK_RUNNING:
+        str_state = "TASK_RUNNING";
+        break;
+    case TASK_STOPPED:
+        str_state = "TASK_STOPPED";
+        break;
+    case TASK_UBERRUPTIBLE:
+        str_state = "TASK_UBERRUPTIBLE";
+        break;
+    }
+    return str_state;
 }
 bool scheduler::kill_task(unsigned short pid)
 {
@@ -82,8 +182,9 @@ bool scheduler::kill_task(unsigned short pid)
                 qDebug() << "linked list error";
             }
             task->state = TASK_KILLED;
+            model_set_state(task->pid, TASK_KILLED);
             if (running_task == task) {
-                update();
+                scheduling();
             }
             return true;
         }
@@ -99,9 +200,10 @@ void scheduler::block_current_task()
 {
     // 设置为阻塞状态，并放入阻塞队列
     this->running_task->state = TASK_STOPPED;
+    model_set_state(running_task->pid, TASK_STOPPED);
     this->block_queue.append(this->running_task);
     this->running_task = nullptr;
-    update();
+    scheduling();
 }
 
 bool scheduler::unblock_task(unsigned short pid)
@@ -111,6 +213,7 @@ bool scheduler::unblock_task(unsigned short pid)
         if (pid == block_queue.at(i)->pid) {
             task = block_queue.at(i);
             task->state = TASK_RUNNING;
+            model_set_state(task->pid, TASK_RUNNING);
             ready_queue.enqueue(task);
             return true;
         }

@@ -2,9 +2,20 @@
 #define SCHED_H
 #include "pcb.h"
 #include <QQueue>
+#include <QtSql>
 class scheduler {
+private:
+    QSqlTableModel* write_model = nullptr;
+    void model_set_state(unsigned int pid, task_state state);
+    /**
+     * 定时运行调度更新
+     * 时间片轮转
+     * 高优先级调度
+     */
+    void scheduling();
+
 public:
-    scheduler();
+    scheduler(QSqlTableModel* write_model);
     // 就绪队列
     QQueue<task_struct*> ready_queue;
     // 阻塞列表
@@ -12,19 +23,14 @@ public:
     // 后备队列
     QList<task_struct*> back_queue;
     // 正在运行的进程
-    task_struct* running_task;
+    task_struct* running_task = nullptr;
     // 根进程
-    task_struct* root_task;
+    task_struct* root_task = nullptr;
+    unsigned int counter = 10;
     /**
      * 满足一定条件时从后备队列中取出放入就绪队列
      */
     void update_ready_queue();
-    /**
-     * 定时运行调度更新
-     * 时间片轮转
-     * 高优先级调度
-     */
-    void update();
     /**
      * 添加一个作业
      * @param task_name 进程名
@@ -48,6 +54,9 @@ public:
      * @return 处理结果
      */
     bool unblock_task(unsigned short pid);
+
+    void update();
+    QString untils(task_state state);
 };
 
 #endif // SCHED_H

@@ -24,9 +24,9 @@ private slots:
 
 private:
     Ui::MainWindow* ui;
-    scheduler schedu;
+    scheduler* schedu;
     QTimer* timer;
-    MySqlQueryModel* back_model;
+    MySqlQueryModel back_model[5];
     QSqlTableModel* write_model;
 
     void add_toolBar();

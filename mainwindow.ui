@@ -35,7 +35,7 @@
     <property name="checkable">
      <bool>false</bool>
     </property>
-    <widget class="QTableWidget" name="ready_tableWidget">
+    <widget class="QTableView" name="ready_tableView">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -44,38 +44,18 @@
        <height>141</height>
       </rect>
      </property>
-     <attribute name="horizontalHeaderVisible">
-      <bool>true</bool>
-     </attribute>
-     <attribute name="horizontalHeaderCascadingSectionResizes">
-      <bool>true</bool>
-     </attribute>
      <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>1</number>
+     </attribute>
+     <attribute name="horizontalHeaderHighlightSections">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="horizontalHeaderMinimumSectionSize">
       <number>89</number>
      </attribute>
-     <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+     <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
-     <column>
-      <property name="text">
-       <string>PID</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>进程名</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>优先级</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>运行时间</string>
-      </property>
-     </column>
     </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_4">
@@ -90,7 +70,7 @@
     <property name="title">
      <string>已完成</string>
     </property>
-    <widget class="QTableWidget" name="finish_tableWidget">
+    <widget class="QTableView" name="finish_tableView">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -99,38 +79,18 @@
        <height>141</height>
       </rect>
      </property>
-     <attribute name="horizontalHeaderVisible">
-      <bool>true</bool>
-     </attribute>
-     <attribute name="horizontalHeaderCascadingSectionResizes">
-      <bool>true</bool>
-     </attribute>
      <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>1</number>
+     </attribute>
+     <attribute name="horizontalHeaderHighlightSections">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="horizontalHeaderMinimumSectionSize">
       <number>89</number>
      </attribute>
-     <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+     <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
-     <column>
-      <property name="text">
-       <string>PID</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>进程名</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>优先级</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>运行时间</string>
-      </property>
-     </column>
     </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_6">
@@ -151,7 +111,7 @@
     <property name="checkable">
      <bool>false</bool>
     </property>
-    <widget class="QTableWidget" name="block_tableWidget">
+    <widget class="QTableView" name="block_tableView">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -160,38 +120,18 @@
        <height>141</height>
       </rect>
      </property>
-     <attribute name="horizontalHeaderVisible">
-      <bool>true</bool>
-     </attribute>
-     <attribute name="horizontalHeaderCascadingSectionResizes">
-      <bool>true</bool>
-     </attribute>
      <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>1</number>
+     </attribute>
+     <attribute name="horizontalHeaderHighlightSections">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="horizontalHeaderMinimumSectionSize">
       <number>89</number>
      </attribute>
-     <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+     <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
-     <column>
-      <property name="text">
-       <string>PID</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>进程名</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>优先级</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>运行时间</string>
-      </property>
-     </column>
     </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_7">
@@ -212,7 +152,7 @@
     <property name="checkable">
      <bool>false</bool>
     </property>
-    <widget class="QTableWidget" name="run_tableWidget">
+    <widget class="QTableView" name="run_tableView">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -221,43 +161,18 @@
        <height>141</height>
       </rect>
      </property>
-     <attribute name="horizontalHeaderVisible">
-      <bool>true</bool>
-     </attribute>
-     <attribute name="horizontalHeaderCascadingSectionResizes">
-      <bool>true</bool>
-     </attribute>
      <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>1</number>
+     </attribute>
+     <attribute name="horizontalHeaderHighlightSections">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="horizontalHeaderMinimumSectionSize">
       <number>69</number>
      </attribute>
-     <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+     <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
-     <column>
-      <property name="text">
-       <string>PID</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>进程名</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>优先级</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>运行时间</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>剩余</string>
-      </property>
-     </column>
     </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_5">

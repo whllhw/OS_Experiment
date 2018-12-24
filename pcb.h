@@ -1,6 +1,7 @@
 #ifndef PCB_H
 #define PCB_H
 #include <QTime>
+#include <climits>
 
 // 进程状态枚举
 enum task_state {
@@ -8,33 +9,33 @@ enum task_state {
     TASK_ACCPECT,
     // 可运行状态
     TASK_RUNNING,
-    // 可中断阻塞状态
-    TASK_UBERRUPTIBLE,
     // 暂停态
     TASK_STOPPED,
+    // 正常结束
+    TASK_FINISHED,
     // 被手动结束
     TASK_KILLED,
-    // 正常结束
-    TASK_FINISHED
+    // 可中断阻塞状态
+    TASK_UBERRUPTIBLE
 };
 struct task_struct {
     // 进程名
-    const char* name;
+    const char* name = nullptr;
     // 进程标识
-    unsigned short pid;
+    unsigned int pid = 0;
     // 优先级
-    unsigned long priority;
+    unsigned int priority = 0;
     // 进程状态
     task_state state;
     // 动态优先级计数器
-    unsigned long counter;
+    int counter = 0;
     // 组成双向链表
-    struct task_struct *next, *prev;
+    struct task_struct *next = nullptr, *prev = nullptr;
     // 进程运行总时间
-    unsigned long sum_exec_runtime;
+    unsigned int sum_exec_runtime = 0;
     // 剩余运行时间
-    unsigned long remain_exec_runtime;
-    task_struct(const char* name, unsigned long priority, unsigned long sum_exec_runtime)
+    int remain_exec_runtime = 0;
+    task_struct(const char* name, unsigned int priority, unsigned int sum_exec_runtime)
     {
         this->name = name;
         this->priority = priority;
@@ -54,7 +55,7 @@ private:
     void find_next_zero_pid()
     {
         // TODO 位图法
-        this->pid = (unsigned short)qrand();
+        this->pid = qrand();
     }
 };
 #endif // PCB_H
