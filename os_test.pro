@@ -28,7 +28,8 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     sched.cpp \
-    dialog.cpp
+    dialog.cpp \
+    sched_highpriority.cpp
 
 HEADERS += \
         mainwindow.h \

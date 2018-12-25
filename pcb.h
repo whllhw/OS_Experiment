@@ -20,7 +20,7 @@ enum task_state {
 };
 struct task_struct {
     // 进程名
-    const char* name = nullptr;
+    QString name;
     // 进程标识
     unsigned int pid = 0;
     // 优先级
@@ -35,12 +35,13 @@ struct task_struct {
     unsigned int sum_exec_runtime = 0;
     // 剩余运行时间
     int remain_exec_runtime = 0;
-    task_struct(const char* name, unsigned int priority, unsigned int sum_exec_runtime)
+    task_struct(QString name, unsigned int priority, unsigned int sum_exec_runtime)
     {
         this->name = name;
         this->priority = priority;
         this->sum_exec_runtime = sum_exec_runtime;
         this->find_next_zero_pid();
+        this->remain_exec_runtime = sum_exec_runtime;
     }
     ~task_struct()
     {

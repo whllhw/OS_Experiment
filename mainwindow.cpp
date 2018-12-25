@@ -17,7 +17,9 @@ MainWindow::MainWindow(QWidget* parent)
     add_toolBar();
     createConnection();
     init_model();
-    schedu = new scheduler(write_model);
+    //    schedu = new scheduler(write_model,
+    //        ui->statusBar);
+    schedu = new sched_highpriority(write_model, ui->statusBar);
     timer = new QTimer(this);
     connect(timer, timer->timeout, this, update);
     timer->start(1000);
@@ -32,7 +34,6 @@ void MainWindow::init_model()
     ui->block_tableView->setModel(&back_model[2]);
     ui->finish_tableView->setModel(&back_model[3]);
     ui->run_tableView->setModel(&back_model[4]);
-    all_query();
 }
 
 void MainWindow::add_toolBar()
@@ -72,7 +73,9 @@ void MainWindow::add_task()
 {
     Dialog* dig = new Dialog(this);
     if (dig->exec()) {
-        QMessageBox::information(this, tr("title"), tr("1"));
+        //        QMessageBox::information(this, tr("title"), tr("1"));
+        task_struct* task = dig->get_task_struct();
+        schedu->add_task(task);
     }
 }
 
@@ -80,34 +83,40 @@ void MainWindow::add_random_task()
 {
 
     const char* c = "0123456789abcdefghijklmnopqrstuvwxyz"; //可填充的字符
-    int ulMsgLength = 5;
+    int ulMsgLength = 6;
     char* MsgBuffer = new char[ulMsgLength]; //定义一个ulMsgLength长度的字符数组
     MsgBuffer[ulMsgLength - 1] = '\0';
     for (int i = 0; i < ulMsgLength - 1; i++) {
         int index = rand() % strlen(c);
         MsgBuffer[i] = c[index];
     }
-    schedu->add_task(MsgBuffer, rand(), rand());
+    schedu->add_task(MsgBuffer, rand() % 10 + 1, rand() % 20 + 1);
 }
 
 void MainWindow::update()
 {
     schedu->update();
     all_query();
+    ui->lcdNumber_3->display(QString::number(counter++));
+    ui->lcdNumber_4->display(QString::number(schedu->counter));
 }
 
 void MainWindow::all_query()
 {
-    //    for (int i = 0; i < 3; i++) {
+    // 后备队列
     back_model[0].setQuery("select pid as PID,task_name as 进程名,"
                            "priority as 优先级,remain_runtime as 剩余时间 from task "
                            "where state = '"
         + schedu->untils(TASK_ACCPECT) + "'");
-    //    }
+    // 就绪队列
     back_model[1].setQuery("select pid as PID,task_name as 进程名,"
                            "priority as 优先级,remain_runtime as 剩余时间 from task "
                            "where state = '"
-        + schedu->untils(TASK_RUNNING) + "'");
+        + schedu->untils(TASK_RUNNING) + "'"
+                                         " and pid <> "
+        + QString::number(
+              schedu->running_task == nullptr ? 0 : schedu->running_task->pid));
+    // 阻塞队列
     back_model[2].setQuery("select pid as PID,task_name as 进程名,"
                            "priority as 优先级,remain_runtime as 剩余时间 from task "
                            "where state = '"
@@ -116,6 +125,7 @@ void MainWindow::all_query()
     back_model[3].setQuery("select pid as PID,task_name as 进程名,"
                            "priority as 优先级,remain_runtime as 剩余时间 from task "
                            "where state = 'TASK_FINISHED' or state = 'TASK_KILLED'");
+    // 运行队列
     back_model[4].setQuery("select pid as PID,task_name as 进程名,"
                            "priority as 优先级,remain_runtime as 剩余时间 from task "
                            "where pid="
@@ -125,4 +135,36 @@ void MainWindow::all_query()
     ui->finish_tableView->resizeColumnsToContents();
     ui->block_tableView->resizeColumnsToContents();
     ui->ready_tableView->resizeColumnsToContents();
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    schedu->block_current_task();
+}
+
+void MainWindow::on_block_tableView_clicked(const QModelIndex& index)
+{
+    QPoint pt;
+    pt.setX(0);
+    pt.setY(index.row());
+    qDebug() << ui->block_tableView->indexAt(pt).data();
+    schedu->unblock_task(ui->block_tableView->indexAt(pt).data().value<unsigned int>());
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    if (schedu->running_task == nullptr) {
+        return;
+    }
+    schedu->kill_task(schedu->running_task->pid);
+}
+
+void MainWindow::on_spinBox_editingFinished()
+{
+    schedu->size_counter = ui->spinBox->value();
+}
+
+void MainWindow::on_spinBox_2_editingFinished()
+{
+    schedu->size_back_queue = ui->spinBox_2->value();
 }

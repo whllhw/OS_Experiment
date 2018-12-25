@@ -16,5 +16,14 @@ Dialog::~Dialog()
 
 void Dialog::on_buttonBox_accepted()
 {
-    QMessageBox::information(this, tr("title"), tr("ok"));
+    //    QMessageBox::information(this, tr("title"), tr("ok"));
+}
+
+task_struct* Dialog::get_task_struct()
+{
+    task_struct* task = new task_struct(
+        ui->lineEdit->text(),
+        ui->spinBox->value(),
+        ui->lineEdit_3->text().toUInt());
+    return task;
 }

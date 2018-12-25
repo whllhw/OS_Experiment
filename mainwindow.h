@@ -22,12 +22,24 @@ private slots:
     void add_random_task();
     void update();
 
+    void on_pushButton_clicked();
+
+    void on_block_tableView_clicked(const QModelIndex& index);
+
+    void on_pushButton_2_clicked();
+
+    void on_spinBox_editingFinished();
+
+    void on_spinBox_2_editingFinished();
+
 private:
     Ui::MainWindow* ui;
-    scheduler* schedu;
+    //    scheduler* schedu;
+    sched_highpriority* schedu;
     QTimer* timer;
     MySqlQueryModel back_model[5];
     QSqlTableModel* write_model;
+    unsigned long long counter = 0;
 
     void add_toolBar();
     void init_model();
