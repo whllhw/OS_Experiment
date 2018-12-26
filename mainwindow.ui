@@ -103,7 +103,7 @@
      </rect>
     </property>
     <property name="title">
-     <string>阻塞队列</string>
+     <string>阻塞队列(点击即可解除阻塞)</string>
     </property>
     <property name="flat">
      <bool>false</bool>
@@ -138,9 +138,9 @@
     <property name="geometry">
      <rect>
       <x>520</x>
-      <y>390</y>
+      <y>450</y>
       <width>381</width>
-      <height>181</height>
+      <height>121</height>
      </rect>
     </property>
     <property name="title">
@@ -158,7 +158,7 @@
        <x>10</x>
        <y>30</y>
        <width>361</width>
-       <height>141</height>
+       <height>81</height>
       </rect>
      </property>
      <attribute name="horizontalHeaderDefaultSectionSize">
@@ -244,8 +244,8 @@
      <rect>
       <x>10</x>
       <y>200</y>
-      <width>201</width>
-      <height>171</height>
+      <width>261</width>
+      <height>181</height>
      </rect>
     </property>
     <property name="title">
@@ -268,7 +268,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>120</y>
+       <y>110</y>
        <width>60</width>
        <height>16</height>
       </rect>
@@ -280,8 +280,8 @@
     <widget class="QSpinBox" name="spinBox">
      <property name="geometry">
       <rect>
-       <x>130</x>
-       <y>120</y>
+       <x>90</x>
+       <y>110</y>
        <width>58</width>
        <height>23</height>
       </rect>
@@ -293,24 +293,14 @@
       <number>2000</number>
      </property>
      <property name="value">
-      <number>1</number>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_3">
-     <property name="geometry">
-      <rect>
-       <x>90</x>
-       <y>40</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
+      <number>10</number>
      </property>
     </widget>
     <widget class="QSpinBox" name="spinBox_2">
      <property name="geometry">
       <rect>
-       <x>130</x>
-       <y>90</y>
+       <x>90</x>
+       <y>80</y>
        <width>58</width>
        <height>23</height>
       </rect>
@@ -329,13 +319,87 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>90</y>
+       <y>80</y>
        <width>81</width>
        <height>16</height>
       </rect>
      </property>
      <property name="text">
       <string>就绪队列大小</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>140</y>
+       <width>54</width>
+       <height>12</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>调度算法</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>140</y>
+       <width>91</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>高优先权</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_2">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>140</y>
+       <width>91</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>时间片轮转</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_3">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>160</y>
+       <width>80</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>确认调度算法</string>
+     </property>
+    </widget>
+    <widget class="QLCDNumber" name="lcdNumber_3">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>30</y>
+       <width>81</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="segmentStyle">
+      <enum>QLCDNumber::Flat</enum>
+     </property>
+     <property name="intValue" stdset="0">
+      <number>88888</number>
      </property>
     </widget>
    </widget>
@@ -367,11 +431,17 @@
     <widget class="QLCDNumber" name="lcdNumber_4">
      <property name="geometry">
       <rect>
-       <x>90</x>
+       <x>110</x>
        <y>60</y>
-       <width>101</width>
-       <height>31</height>
+       <width>81</width>
+       <height>41</height>
       </rect>
+     </property>
+     <property name="segmentStyle">
+      <enum>QLCDNumber::Flat</enum>
+     </property>
+     <property name="intValue" stdset="0">
+      <number>88888</number>
      </property>
     </widget>
    </widget>

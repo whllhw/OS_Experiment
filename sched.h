@@ -9,6 +9,7 @@ protected:
     QSqlTableModel* write_model = nullptr;
     QStatusBar* statusBar = nullptr;
     void model_set_state(unsigned int pid, task_state state);
+    void model_set_state(task_struct* task, task_state state);
     /**
      * 定时运行调度更新
      * 时间片轮转
@@ -16,15 +17,16 @@ protected:
      */
     void scheduling();
     int model_count_remaintime();
+    QMutex* mutex = nullptr;
 
 public:
     scheduler(QSqlTableModel* write_model, QStatusBar* statusBar);
     // 就绪队列
-    QQueue<task_struct*> ready_queue;
+    QQueue<task_struct*>* ready_queue;
     // 阻塞列表
-    QList<task_struct*> block_queue;
+    QList<task_struct*>* block_queue;
     // 后备队列
-    QList<task_struct*> back_queue;
+    QList<task_struct*>* back_queue;
     // 正在运行的进程
     task_struct* running_task = nullptr;
     // 根进程
@@ -34,11 +36,11 @@ public:
     // 就绪队列大小
     int size_back_queue = 3;
     // 时间计数器
-    unsigned int counter = 10;
+    int counter = 10;
     /**
      * 满足一定条件时从后备队列中取出放入就绪队列
      */
-    void update_ready_queue();
+    virtual void update_ready_queue();
     /**
      * 添加一个作业
      * @param task_name 进程名
@@ -63,9 +65,22 @@ public:
      * @return 处理结果
      */
     bool unblock_task(unsigned int pid);
-
-    void update();
+    /**
+     * 按秒更新，决定是否进行调度
+     */
+    virtual void update();
     QString untils(task_state state);
+    scheduler()
+    {
+        qDebug() << "error init !!";
+    }
+    QSqlTableModel* get_write_model() { return write_model; }
+    QStatusBar* get_statusBar()
+    {
+        return statusBar;
+    }
+    QMutex* get_mutex() { return mutex; }
+    task_struct* del_from_link(unsigned int pid);
 };
 
 /**
@@ -76,6 +91,18 @@ protected:
     void scheduling();
 
 public:
+    sched_highpriority(scheduler& s)
+    {
+        this->back_queue = s.back_queue;
+        this->block_queue = s.block_queue;
+        this->ready_queue = s.ready_queue;
+        this->running_task = s.running_task;
+        this->root_task = s.running_task;
+        this->size_back_queue = s.size_back_queue;
+        this->write_model = s.get_write_model();
+        this->statusBar = s.get_statusBar();
+        this->mutex = s.get_mutex();
+    }
     void update();
     void update_ready_queue();
     sched_highpriority(QSqlTableModel* write_model, QStatusBar* statusBar)

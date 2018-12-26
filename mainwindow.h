@@ -32,18 +32,22 @@ private slots:
 
     void on_spinBox_2_editingFinished();
 
+    void on_pushButton_3_clicked();
+
 private:
     Ui::MainWindow* ui;
-    //    scheduler* schedu;
-    sched_highpriority* schedu;
+    scheduler* schedu;
+    //    sched_highpriority* schedu;
     QTimer* timer;
     MySqlQueryModel back_model[5];
     QSqlTableModel* write_model;
     unsigned long long counter = 0;
+    bool is_current_highpriority = true;
 
     void add_toolBar();
     void init_model();
     void all_query();
+    void hide_lcd();
 };
 
 #endif // MAINWINDOW_H

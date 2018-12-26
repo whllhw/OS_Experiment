@@ -17,9 +17,8 @@ MainWindow::MainWindow(QWidget* parent)
     add_toolBar();
     createConnection();
     init_model();
-    //    schedu = new scheduler(write_model,
-    //        ui->statusBar);
-    schedu = new sched_highpriority(write_model, ui->statusBar);
+    schedu = new scheduler(write_model, ui->statusBar);
+    is_current_highpriority = false;
     timer = new QTimer(this);
     connect(timer, timer->timeout, this, update);
     timer->start(1000);
@@ -115,7 +114,8 @@ void MainWindow::all_query()
         + schedu->untils(TASK_RUNNING) + "'"
                                          " and pid <> "
         + QString::number(
-              schedu->running_task == nullptr ? 0 : schedu->running_task->pid));
+              schedu->running_task == nullptr ? 0 : schedu->running_task->pid)
+        + (is_current_highpriority ? " order by priority desc" : ""));
     // 阻塞队列
     back_model[2].setQuery("select pid as PID,task_name as 进程名,"
                            "priority as 优先级,remain_runtime as 剩余时间 from task "
@@ -167,4 +167,31 @@ void MainWindow::on_spinBox_editingFinished()
 void MainWindow::on_spinBox_2_editingFinished()
 {
     schedu->size_back_queue = ui->spinBox_2->value();
+}
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    if (ui->radioButton->isChecked() && !is_current_highpriority) {
+        is_current_highpriority = true;
+        schedu = new sched_highpriority(*schedu);
+        //        QMessageBox::information(this, "成功", "切换为优先权调度");
+        ui->statusBar->showMessage("切换为优先权调度", 10);
+    } else if (ui->radioButton_2->isChecked() && is_current_highpriority) {
+        is_current_highpriority = false;
+        schedu = new scheduler(*schedu);
+        //        QMessageBox::information(this, "成功", "切换为时间片调度");
+        ui->statusBar->showMessage("切换为时间片调度", 10);
+    }
+    hide_lcd();
+}
+
+void MainWindow::hide_lcd()
+{
+    if (is_current_highpriority) {
+        ui->lcdNumber_4->hide();
+        ui->label_3->hide();
+    } else {
+        ui->lcdNumber_4->show();
+        ui->label_3->show();
+    }
 }

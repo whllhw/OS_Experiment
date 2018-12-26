@@ -11,13 +11,14 @@
 void sched_highpriority::update_ready_queue()
 {
     scheduler::update_ready_queue();
-    std::sort(ready_queue.begin(), ready_queue.end(),
+    std::sort(ready_queue->begin(), ready_queue->end(),
         [](const task_struct* s1, const task_struct* s2) { return s1->priority > s2->priority; });
 }
 /**
  * 高优先权非抢占式发生调度情况：
  * 1. 无运行中的进程
  * 2. 运行进程完毕
+ * 3. 当前进程被杀死、阻塞
  */
 void sched_highpriority::update()
 {
@@ -26,7 +27,8 @@ void sched_highpriority::update()
         scheduling();
         return;
     }
-    if (model_count_remaintime() <= 0) {
+    if (model_count_remaintime() <= 0
+        || running_task->state != TASK_RUNNING) {
         scheduling();
     }
 }
@@ -40,21 +42,22 @@ void sched_highpriority::scheduling()
 {
     qDebug() << "call for sched_highpriority";
     if (running_task == nullptr) {
-        qDebug() << "当前无运行中的进程";
+        //        qDebug() << "当前无运行中的进程";
         statusBar->showMessage("当前无运行中的进程");
     } else {
         if (running_task->remain_exec_runtime <= 0) {
             model_set_state(running_task->pid, TASK_FINISHED);
+            del_from_link(running_task->pid);
             running_task = nullptr;
         } else {
-            qDebug() << __FILE__ << __LINE__ << ":错误的调度！";
+            qDebug() << __FILE__ << __LINE__ << ":error scheduler!";
             return;
         }
     }
-    if (ready_queue.empty()) {
-        qDebug() << "就绪队列为空";
+    if (ready_queue->empty()) {
+        //        qDebug() << "就绪队列为空";
         return;
     }
-    task_struct* task = this->ready_queue.dequeue();
+    task_struct* task = this->ready_queue->dequeue();
     this->running_task = task;
 }
