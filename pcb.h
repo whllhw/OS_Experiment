@@ -29,8 +29,6 @@ struct task_struct {
     task_state state;
     // 动态优先级计数器
     int counter = 0;
-    // 组成双向链表
-    struct task_struct *next = nullptr, *prev = nullptr;
     // 进程运行总时间
     unsigned int sum_exec_runtime = 0;
     // 剩余运行时间

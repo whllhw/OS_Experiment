@@ -15,8 +15,6 @@ scheduler::scheduler(QSqlTableModel* write_model, QStatusBar* statusBar)
     // 初始化根进程，用于双向链表
     root_task = new task_struct("root", 0, 0);
     root_task->state = TASK_UBERRUPTIBLE;
-    root_task->prev = root_task;
-    root_task->next = root_task;
     this->write_model = write_model;
     this->statusBar = statusBar;
     ready_queue = new QQueue<task_struct*>();
@@ -49,14 +47,6 @@ bool scheduler::add_task(task_struct* task)
     query.exec();
     this->back_queue->append(task);
     // 放入双向链表
-    // 上锁，插入数据时线程安全，离开函数则释放锁
-    QMutexLocker locker(mutex);
-
-    root_task->prev->next = task;
-    task->next = root_task;
-    task->prev = root_task->prev;
-    root_task->prev = task;
-
     return true;
 }
 /**
@@ -103,7 +93,6 @@ void scheduler::scheduling()
         // 放入就绪队列末尾
         if (running_task->remain_exec_runtime <= 0) {
             model_set_state(running_task, TASK_FINISHED);
-            del_from_link(running_task->pid);
             running_task = nullptr;
         } else {
             if (running_task->state != TASK_RUNNING) {
@@ -219,44 +208,30 @@ QString scheduler::untils(task_state state)
     }
     return str_state;
 }
+
 /**
- * 从双向链表删除指定pid的进程
- * @param pid
- * @return 找到的进程
- */
-task_struct* scheduler::del_from_link(unsigned int pid)
-{
-    QMutexLocker locker(mutex);
-    task_struct* task = root_task->next;
-    while (task != nullptr && task != root_task) {
-        if (task->pid == pid) {
-            // 删除双向链表
-            if (task->prev) {
-                task->prev->next = task->next;
-                task->next->prev = task->prev;
-            } else {
-                qDebug() << "linked list error";
-            }
-            return task;
-        }
-        task = task->next;
-    }
-    qDebug() << __LINE__ << "cannot find pid:" << pid;
-    return nullptr;
-}
-/**
- * 杀死任务，并从双向链表中删除
+ * 杀死就绪队列中/运行中的任务，并从双向链表中删除
  * @param pid
  * @return 是否找到了进程
  */
 bool scheduler::kill_task(unsigned int pid)
 {
-    task_struct* task = del_from_link(pid);
+    task_struct* task = nullptr;
+    if (running_task->pid == pid) {
+        task = running_task;
+    } else {
+        for (int i = 0; i < ready_queue->length(); i++) {
+            if (ready_queue->at(i)->pid == pid) {
+                task = ready_queue->at(i);
+                break;
+            }
+        }
+    }
     if (task != nullptr) {
         model_set_state(task, TASK_KILLED);
-        del_from_link(task->pid);
         return true;
     }
+    qDebug() << __FILE__ << __LINE__ << ":error state value";
     return false;
 }
 /**

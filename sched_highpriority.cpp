@@ -37,17 +37,20 @@ void sched_highpriority::update()
  * 高优先权非抢占式发生调度情况：
  * 1. 无运行中的进程
  * 2. 运行进程完毕
+ * 3. 进程被阻塞
+ * 4. 进程被杀死
  */
 void sched_highpriority::scheduling()
 {
-    qDebug() << "call for sched_highpriority";
     if (running_task == nullptr) {
         //        qDebug() << "当前无运行中的进程";
         statusBar->showMessage("当前无运行中的进程");
     } else {
         if (running_task->remain_exec_runtime <= 0) {
             model_set_state(running_task->pid, TASK_FINISHED);
-            del_from_link(running_task->pid);
+            running_task = nullptr;
+        } else if (running_task->state == TASK_KILLED
+            || running_task->state == TASK_STOPPED) {
             running_task = nullptr;
         } else {
             qDebug() << __FILE__ << __LINE__ << ":error scheduler!";

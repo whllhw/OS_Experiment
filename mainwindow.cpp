@@ -89,7 +89,7 @@ void MainWindow::add_random_task()
         int index = rand() % strlen(c);
         MsgBuffer[i] = c[index];
     }
-    schedu->add_task(MsgBuffer, rand() % 10 + 1, rand() % 20 + 1);
+    schedu->add_task(MsgBuffer, rand() % 10 + 1, rand() % 200 + 1);
 }
 
 void MainWindow::update()
