@@ -81,7 +81,7 @@ void MainWindow::add_task()
 void MainWindow::add_random_task()
 {
 
-    const char* c = "0123456789abcdefghijklmnopqrstuvwxyz"; //可填充的字符
+    const char* c = "0123456789abcdefghijklmnopqrstuvwxyzQWERTYUIOPASDFGHJKLZXCVBNM"; //可填充的字符
     int ulMsgLength = 6;
     char* MsgBuffer = new char[ulMsgLength]; //定义一个ulMsgLength长度的字符数组
     MsgBuffer[ulMsgLength - 1] = '\0';

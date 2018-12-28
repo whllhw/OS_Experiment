@@ -16,6 +16,10 @@
   <property name="windowTitle">
    <string>donkey[system] - core</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>H:/博客/blog/source/favicon.ico</normaloff>H:/博客/blog/source/favicon.ico</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QGroupBox" name="groupBox_3">
     <property name="geometry">

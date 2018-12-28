@@ -45,6 +45,7 @@ bool scheduler::add_task(task_struct* task)
     query.bindValue(":total_runtime", task->sum_exec_runtime);
     query.bindValue(":remain_runtime", task->sum_exec_runtime);
     query.exec();
+
     this->back_queue->append(task);
     // 放入双向链表
     return true;
@@ -71,12 +72,12 @@ void scheduler::update_ready_queue()
         //        qDebug() << "后备队列数量为0";
         return;
     }
-
     std::sort(back_queue->begin(), back_queue->end(),
         [](task_struct* s1, task_struct* s2) { return s1->priority > s2->priority; });
     task_struct* task = back_queue->at(0);
     back_queue->removeAt(0);
     model_set_state(task, TASK_RUNNING);
+    QMutexLocker locker(mutex);
     ready_queue->enqueue(task);
 }
 /**
@@ -98,6 +99,7 @@ void scheduler::scheduling()
             if (running_task->state != TASK_RUNNING) {
                 running_task = nullptr;
             } else {
+                QMutexLocker locker(mutex);
                 this->ready_queue->enqueue(this->running_task);
             }
         }
@@ -262,6 +264,7 @@ bool scheduler::unblock_task(unsigned int pid)
             }
             task = block_queue->at(i);
             model_set_state(task, TASK_RUNNING);
+            QMutexLocker locker(mutex);
             ready_queue->enqueue(task);
             return true;
         }
